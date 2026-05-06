@@ -1,0 +1,19 @@
+{
+  "name": "vip-cleaning-management",
+  "version": "1.0.0",
+  "description": "VIP保洁客户管理系统",
+  "main": "server-simple.js",
+  "scripts": {
+    "start": "node minimal-server.js",
+    "dev": "node minimal-server.js",
+    "simple": "node server-simple.js",
+    "minimal": "node minimal-server.js",
+    "test": "node quick-test.js"
+  },
+  "keywords": ["vip", "cleaning", "management"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "systemName": "VIP保洁客户管理系统",
+    "password": "admin123",
+    "announcement": "",
+    "vipLevels": [
+      "普通VIP",
+      "银牌VIP",
+      "金牌VIP",
+      "钻石VIP"
+    ],
+    "managers": [],
+    "enableShareView": true,
+    "showRemainingTime": true,
+    "showRemainingAmount": true,
+    "showServiceRecords": true,
+    "showContactInfo": true,
+    "showExpiration": true
+  },
+  "vips": [
+    {
+      "vip_id": "1778074585760",
+      "name": "1",
+      "phone": "1",
+      "address": "1",
+      "level": "普通VIP",
+      "fixedManager": "",
+      "statMode": "duration",
+      "totalHours": 121212,
+      "totalAmount": 0,
+      "startDate": "2026-04-29",
+      "endDate": "2026-05-15",
+      "services": [],
+      "createdAt": "2026-05-06T13:36:25.762Z"
+    }
+  ],
+  "history": []
+}

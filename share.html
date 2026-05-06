@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP 客户信息</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #dc3545;
+        }
+        .vip-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .vip-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        .services-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .service-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .service-date {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .service-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .service-details {
+            color: #666;
+            font-size: 14px;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .hidden {
+            display: none;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 VIP 客户信息</h1>
+            <p id="systemName">VIP 保洁客户管理系统</p>
+        </div>
+        <div class="content" id="content">
+            <div class="loading" id="loading">正在加载</div>
+            <div class="error hidden" id="error">客户信息不存在或已被删除</div>
+            <div class="hidden" id="vipContent">
+                <!-- VIP 信息将在这里显示 -->
+            </div>
+        </div>
+        <div class="footer">
+            © 2026 优境公司 | 卓越服务 · 品质生活
+        </div>
+    </div>
+
+    <script>
+        let settings = {};
+
+        // 从 localStorage 加载数据
+        function loadData() {
+            const saved = localStorage.getItem('vipSystemData');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return {
+                settings: {
+                    systemName: "VIP保洁客户管理系统",
+                    enableShareView: true,
+                    showRemainingTime: true,
+                    showRemainingAmount: true,
+                    showServiceRecords: true,
+                    showContactInfo: true,
+                    showExpiration: true
+                },
+                vips: []
+            };
+        }
+
+        // 模拟 API 函数（分享页面只需要 GET 请求）
+        async function api(endpoint, options = {}) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const data = loadData();
+                    const method = (options.method || 'GET').toUpperCase();
+                    
+                    if (endpoint === '/settings' && method === 'GET') {
+                        resolve(data.settings);
+                        return;
+                    }
+                    
+                    const vipMatch = endpoint.match(/^\/vips\/([^/]+)$/);
+                    if (vipMatch && method === 'GET') {
+                        const vipId = vipMatch[1];
+                        const vip = data.vips.find(v => v.vip_id === vipId);
+                        if (vip) {
+                            resolve(vip);
+                        } else {
+                            resolve({ error: '客户不存在' });
+                        }
+                        return;
+                    }
+                    
+                    resolve({ error: 'Not found' });
+                }, 100);
+            });
+        }
+
+        function getVipStatus(endDate) {
+            if (!endDate) return { text: '未设置', cls: 'badge-warning', days: 999 };
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(0, 0, 0, 0);
+            const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+            
+            if (diff < 0) return { text: '已过期', cls: 'badge-danger', days: diff };
+            if (diff <= 30) return { text: '即将到期', cls: 'badge-warning', days: diff };
+            return { text: '有效', cls: 'badge-success', days: diff };
+        }
+
+        function calcTotalDuration(services) {
+            if (!services) return 0;
+            return services.reduce((sum, s) => sum + (parseFloat(s.duration) || 0), 0);
+        }
+
+        function calcTotalAmount(services) {
+            if (!services) return 0;
+            return services.reduce((sum, s) => {
+                const dur = parseFloat(s.duration) || 0;
+                const price = parseFloat(s.pricePerHour) || 50;
+                return sum + (dur * price);
+            }, 0);
+        }
+
+        function renderVipInfo(vip) {
+            const content = document.getElementById('vipContent');
+            const status = getVipStatus(vip.endDate);
+            const usedDuration = calcTotalDuration(vip.services);
+            const usedAmount = calcTotalAmount(vip.services);
+
+            let html = '<div class="vip-info">';
+            html += '<div class="vip-name">' + vip.name + '</div>';
+            html += '<div class="info-grid">';
+            
+            if (settings.showContactInfo) {
+                html += '<div class="info-item"><div class="info-label">联系电话</div><div class="info-value">' + (vip.phone || '-') + '</div></div>';
+                html += '<div class="info-item"><div class="info-label">服务地址</div><div class="info-value">' + (vip.address || '-') + '</div></div>';
+            }
+            
+            html += '<div class="info-item"><div class="info-label">VIP 等级</div><div class="info-value">' + (vip.level || '-') + '</div></div>';
+            
+            if (vip.fixedManager) {
+                html += '<div class="info-item"><div class="info-label">固定管家</div><div class="info-value">' + vip.fixedManager + '</div></div>';
+            }
+            
+            if (settings.showRemainingTime && vip.statMode === 'duration') {
+                const remaining = Math.max(0, (vip.totalHours || 0) - usedDuration);
+                html += '<div class="info-item"><div class="info-label">剩余时长</div><div class="info-value">' + remaining + ' 小时</div></div>';
+            }
+            
+            if (settings.showRemainingAmount && vip.statMode === 'amount') {
+                const remaining = Math.max(0, (vip.totalAmount || 0) - usedAmount);
+                html += '<div class="info-item"><div class="info-label">剩余金额</div><div class="info-value">¥' + remaining.toFixed(2) + '</div></div>';
+            }
+            
+            if (settings.showExpiration) {
+                html += '<div class="info-item"><div class="info-label">包年到期</div><div class="info-value">' + (vip.endDate || '-') + '</div></div>';
+                html += '<div class="info-item"><div class="info-label">状态</div><div class="info-value"><span class="badge ' + status.cls + '">' + status.text + '</span></div></div>';
+            }
+            
+            html += '</div></div>';
+
+            if (settings.showServiceRecords) {
+                html += '<div class="section-title">📋 服务记录</div>';
+                if (vip.services && vip.services.length > 0) {
+                    html += '<div class="services-list">';
+                    vip.services.slice().reverse().forEach(service => {
+                        html += '<div class="service-item">';
+                        html += '<div class="service-header">';
+                        html += '<span class="service-date">' + service.date + '</span>';
+                        html += '<span class="service-type">' + service.type + '</span>';
+                        html += '</div>';
+                        html += '<div class="service-details">';
+                        html += '服务时长：' + service.duration + ' 小时';
+                        if (service.manager) {
+                            html += ' | 服务管家：' + service.manager;
+                        }
+                        if (service.remark) {
+                            html += ' | 备注：' + service.remark;
+                        }
+                        html += '</div></div>';
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="no-data">暂无服务记录</div>';
+                }
+            }
+
+            content.innerHTML = html;
+        }
+
+        async function loadVip() {
+            const params = new URLSearchParams(window.location.search);
+            const vipId = params.get('id');
+            
+            if (!vipId) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
+                return;
+            }
+
+            try {
+                settings = await api('/settings');
+                if (settings.systemName) {
+                    document.getElementById('systemName').textContent = settings.systemName;
+                }
+                
+                if (!settings.enableShareView) {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('error').textContent = '分享功能已关闭';
+                    document.getElementById('error').classList.remove('hidden');
+                    return;
+                }
+
+                const vip = await api('/vips/' + vipId);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('vipContent').classList.remove('hidden');
+                renderVipInfo(vip);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error').classList.remove('hidden');
+            }
+        }
+
+        loadVip();
+    </script>
+</body>
+</html>
